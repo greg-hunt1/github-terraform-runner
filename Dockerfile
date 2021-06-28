@@ -1,4 +1,5 @@
-FROM debian:buster-slim
+FROM debian:buster-slim AS build
+
 
 ENV GITHUB_PAT ""
 ENV GITHUB_TOKEN ""
@@ -9,12 +10,18 @@ ENV RUNNER_LABELS ""
 ENV ADDITIONAL_PACKAGES ""
 
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
         curl \
         sudo \
         git \
         jq \
         iputils-ping \
+        gnupg \
+        software-properties-common \
+    && curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - \
+    && sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+    && sudo apt-get update \
+    && sudo apt-get install terraform \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -m github \
